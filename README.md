@@ -123,6 +123,10 @@ The installed directory must contain `SKILL.md`, `assets/`, and `references/`.
 | [`code-fix-with-approval.md`](examples/code-fix-with-approval.md) | Full six-section loop with an approval gate and residual routing |
 | [`anti-example-unbounded.md`](examples/anti-example-unbounded.md) | An intentionally broken loop — the 400-broken-calls shape — annotated with why it is undeliverable |
 
+## Friends
+
+- [LINUX DO](https://linux.do/) - 新的理想型社区
+
 ## License
 
 MIT
