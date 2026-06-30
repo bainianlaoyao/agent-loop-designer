@@ -1,129 +1,112 @@
 # Agent Loop Designer
 
-> Design disciplined, platform-neutral agent loops as Markdown documents that
-> any agent CLI can self-drive. Design only — never execute.
+[English README](README.en.md)
 
-A single skill that turns "make an agent that does X" into a `loop.md`: a
-portable loop specification with an observable success signal, a progress
-invariant on every path, domain-matched verification, and narrow approval
-gates. The skill designs the loop; your own agent runs it.
+> 把智能体循环设计成平台无关的 Markdown 契约。只做设计，不执行循环。
 
-## What is an agent loop?
+这是一个用于 Codex / Claude Code 等智能体 CLI 的 skill。它把“做一个能循环完成 X 的智能体”转成一份 `loop.md`：里面明确目标、可观测成功信号、终止条件、进度不变量、领域匹配的验证方式、审批门，以及失败后的 residual routing。
 
-The form OpenAI, Anthropic, Google, Microsoft, Meta, and LangChain all
-converged on: an LLM calls tools inside a `while` loop until the task completes
-or a stop condition fires. Its inner cycle is **Perceive → Reason → Plan → Act
-→ Observe** (ReAct's Thought / Action / Observation).
+这个 skill 只负责设计循环；真正执行循环的是你自己的智能体环境。
 
-The catch: a loop without bounds fails. There is a documented case of an agent
-calling a broken tool **400 times in five minutes** because its prompt said
-"retry until you get data" and nothing made it stop. The hard part of an agent
-loop is not making it run — it is making it **stop correctly**. That is a
-design problem, and it is what this skill addresses.
+## 什么是 agent loop？
 
-## Relationship to open-dynamic-harness
+主流智能体框架最后都会收敛到一个形状：LLM 在一个 `while` 循环里调用工具，直到任务完成或触发停止条件。循环内部通常是 **Perceive → Reason → Plan → Act → Observe**，也就是 ReAct 的 Thought / Action / Observation。
 
-This project takes the engineering-cybernetics discipline from
-[open-dynamic-harness](https://github.com/bainianlaoyao/open-dynamic-harness)
-— bounded recovery, domain-matched verification, residual classification,
-approval gates — but applies it differently:
+问题在于：没有边界的循环会失控。曾经有记录显示，一个 agent 因为提示词写着“retry until you get data”，在工具损坏时 5 分钟内调用失败工具 **400 次**。agent loop 最难的不是让它跑起来，而是让它**正确停止**。
+
+Agent Loop Designer 解决的就是这个设计问题。
+
+## 和 open-dynamic-harness 的关系
+
+这个项目继承了 [open-dynamic-harness](https://github.com/bainianlaoyao/open-dynamic-harness) 的工程控制思想：bounded recovery、domain-matched verification、residual classification、approval gates。
+
+区别在于：
 
 | | open-dynamic-harness | agent-loop-designer |
 |---|---|---|
-| Output | `workflow.py` | `loop.md` (Markdown) |
-| Discipline enforced by | program control flow | document convention |
-| Executor | a runtime walks the file | any agent self-drives the doc |
-| Platform | routes to specific CLIs/models | platform-neutral by contract |
-| Scope | generate + run + review | design only |
+| 输出 | `workflow.py` | `loop.md` |
+| 约束方式 | 程序控制流 | 文档契约 |
+| 执行者 | runtime 读取文件执行 | 任意 agent 自驱执行 |
+| 平台 | 路由到具体 CLI / model | 平台无关 |
+| 范围 | 生成 + 执行 + review | 只设计 |
 
-Where the harness *enforces* a progress invariant in code, this skill *agrees*
-on one in prose and requires the executing agent to print it every iteration.
-The discipline is the same; the binding is by convention, not by kernel.
+`open-dynamic-harness` 在代码里强制进度不变量；这个 skill 在 `loop.md` 中约定进度不变量，并要求执行 agent 每轮打印它。纪律相同，绑定方式不同。
 
-## Usage
+## 使用方式
 
-Invoke the skill in your agent CLI:
+在你的 agent CLI 中调用：
 
 ```text
 $agent-loop     # Codex
 /agent-loop     # Claude Code
 ```
 
-Describe the task you want an agent to loop over. The skill **surveys the
-subagent capability** of its current platform first (so it knows what it can
-actually dispatch), then **grills you** — interrogating one branch of the
-design tree at a time (success signal, termination, progress invariant,
-irreversible actions, failure routing, subagent selection if the loop
-dispatches any, worst case), each question shipping a recommended answer for
-you to accept or reject — until the loop's shape is fully decided. Only then
-does it draft `loop.md` and iterate with you to acceptance. Hand the
-resulting `loop.md` to any agent to execute.
+然后描述你希望 agent 循环处理的任务。这个 skill 会先调查当前平台可用的 subagent 能力，再逐条追问设计决策：成功信号、终止条件、进度不变量、不可逆动作、失败路由、是否需要 subagent、最坏情况和 Plan B。
 
-## Install
+每个问题都会带一个推荐答案供你接受或修正。设计树收敛后，它才会起草 `loop.md`，并和你迭代到可接受为止。
 
-The quickest install path is the cross-agent
-[`skills`](https://github.com/vercel-labs/skills) CLI. It is a third-party
-installer, not an OpenAI or Anthropic official installer, but this repository's
-`skills/agent-loop/` layout is compatible with it.
+## 安装
+
+最快的安装方式是使用跨 agent 的 [`skills`](https://github.com/vercel-labs/skills) CLI。它是第三方安装器，不是 OpenAI 或 Anthropic 官方安装器；但本仓库的 `skills/agent-loop/` 结构兼容它。
 
 ### Codex
 
-Install globally:
+全局安装：
 
 ```bash
 npx skills add bainianlaoyao/agent-loop-designer --skill agent-loop --agent codex --global --yes
 ```
 
-Then restart Codex so it picks up the new skill.
+安装后重启 Codex，让它加载新 skill。
 
-For a repo-local install, omit `--global`.
+如果要安装到当前仓库，去掉 `--global`。
 
 ### Claude Code
 
-Install globally:
+全局安装：
 
 ```bash
 npx skills add bainianlaoyao/agent-loop-designer --skill agent-loop --agent claude-code --global --yes
 ```
 
-Then restart Claude Code so it picks up the new skill.
+安装后重启 Claude Code，让它加载新 skill。
 
-For a project-local install, omit `--global`.
+如果要安装到当前项目，去掉 `--global`。
 
-To preview what the installer will find before installing:
+安装前可以先预览安装器能发现哪些 skill：
 
 ```bash
 npx skills add bainianlaoyao/agent-loop-designer --list
 ```
 
-### Manual install
+### 手动安装
 
-Copy the whole skill directory, not just `SKILL.md`:
+复制整个 skill 目录，而不是只复制 `SKILL.md`：
 
 ```text
 skills/agent-loop/
 ```
 
-Common destinations:
+常见目标路径：
 
 ```text
-~/.codex/skills/agent-loop/       # Codex user skill
-~/.claude/skills/agent-loop/      # Claude Code personal skill
-.agents/skills/agent-loop/        # Codex repo skill
-.claude/skills/agent-loop/        # Claude Code project skill
+~/.codex/skills/agent-loop/       # Codex 用户级 skill
+~/.claude/skills/agent-loop/      # Claude Code 个人 skill
+.agents/skills/agent-loop/        # Codex 仓库级 skill
+.claude/skills/agent-loop/        # Claude Code 项目级 skill
 ```
 
-The installed directory must contain `SKILL.md`, `assets/`, and `references/`.
+安装后的目录必须包含 `SKILL.md`、`assets/` 和 `references/`。
 
-## Examples
+## 示例
 
-| Example | Shows |
+| 示例 | 展示内容 |
 |---|---|
-| [`simple-research.md`](examples/simple-research.md) | Minimal four-section loop for a single-domain, reversible task |
-| [`code-fix-with-approval.md`](examples/code-fix-with-approval.md) | Full six-section loop with an approval gate and residual routing |
-| [`anti-example-unbounded.md`](examples/anti-example-unbounded.md) | An intentionally broken loop — the 400-broken-calls shape — annotated with why it is undeliverable |
+| [`simple-research.md`](examples/simple-research.md) | 单领域、可逆任务的最小四段式 loop |
+| [`code-fix-with-approval.md`](examples/code-fix-with-approval.md) | 带审批门和 residual routing 的完整 loop |
+| [`anti-example-unbounded.md`](examples/anti-example-unbounded.md) | 一个故意写坏的无界 loop，展示为什么它不可交付 |
 
-## Friends
+## 友链
 
 - [LINUX DO](https://linux.do/) - 新的理想型社区
 
