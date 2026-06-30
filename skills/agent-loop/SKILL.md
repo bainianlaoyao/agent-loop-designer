@@ -66,9 +66,23 @@ compile goal -> survey role capability -> grill -> draft -> review -> user diff 
 Bound drafting to the initial draft plus 2 review/rewrite rounds. If the same
 residual is present in the initial draft and both rewrites, stop and ask.
 
-## Grill Focus
+## Grill Discipline
 
-Resolve these before drafting, roughly in order:
+The grill turns a vague goal into a design sharp enough to write. Never skip it
+unless the user explicitly asks to draft with open questions.
+
+Rules:
+
+1. Ask about one design branch at a time, with 2-3 related questions per turn.
+2. Include a recommended answer with every question; the user accepts or
+   corrects it.
+3. Work depth-first. Exhaust one branch before switching to the next.
+4. Do your own homework first. If code or docs can answer a question, read them
+   and present the conclusion for confirmation.
+5. Push back on vague answers such as "make it work" or "good enough"; name the
+   vagueness, offer a sharper strawman, and ask again.
+
+Resolve these branches before drafting, roughly in order:
 
 - observable success signal and failure signal
 - output domains and matching measurements
